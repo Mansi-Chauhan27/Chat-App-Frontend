@@ -7,6 +7,8 @@ import { UserOutlined } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 
 import { auth } from "../firebase";
+import Demo from "./chat/Demo";
+import Chatapp from "./chat/Chatapp";
 
 export default function Chats() {
   const didMountRef = useRef(false);
@@ -86,12 +88,13 @@ export default function Chats() {
         </div>
       </div>
 
-      <ChatEngine
+      {/* <ChatEngine
         height="calc(100vh - 66px)"
         projectID={process.env.REACT_APP_CHAT_ENGINE_ID}
         userName={user.email}
         userSecret={user.uid}
-      />
+      /> */}
+      <Chatapp />
     </div>
   );
 }
