@@ -26,7 +26,7 @@ export default function Chats() {
   }
 
   const goProfilePage = () => {
-    history.push("/profile");
+    history.push("/video");
   };
 
   useEffect(() => {
