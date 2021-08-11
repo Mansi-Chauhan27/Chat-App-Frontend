@@ -15,15 +15,15 @@ function App() {
   return (
     // <div style={{ fontFamily: "Avenir" }}>
       <Router>
-        <AuthProvider>
+        {/* <AuthProvider> */}
           <Switch>
-            <Route path="/chats" component={Chats} />
+            <Route path="/chats" component={Chatapp} />
             <Route path="/profile" component={Profile} /> 
             <Route path="/video" component={RecordVideo} />
             <Route path="/demo" component={Chatapp} />
             <Route path="/" component={Login} />
           </Switch>
-        </AuthProvider>
+        {/* </AuthProvider> */}
       </Router>
     // </div>
   );

@@ -16,8 +16,15 @@ import Fab from '@material-ui/core/Fab';
 import SendIcon from '@material-ui/icons/Send';
 import { isIterableArray } from '../common/utils';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
+import Button from '@material-ui/core/Button';
+import Modal from '@material-ui/core/Modal';
+import Backdrop from '@material-ui/core/Backdrop';
+import Fade from '@material-ui/core/Fade';
+import RecordVideo from './Video';
 
-const useStyles = makeStyles({
+
+
+const useStyles = makeStyles((theme) =>({
     table: {
         minWidth: 650,
     },
@@ -34,19 +41,45 @@ const useStyles = makeStyles({
     messageArea: {
         height: '70vh',
         overflowY: 'auto'
-    }
-});
+    },
+    modal: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    paper: {
+        backgroundColor: theme.palette.background.paper,
+        border: '2px solid #000',
+        boxShadow: theme.shadows[5],
+        padding: theme.spacing(2, 4, 3),
+        width:'50%',
+        height:'77%',
+        overflowY:'scroll'
+    },
+
+}));
 
 const Chatapp = () => {
     const classes = useStyles();
 
-   
+
     const [groupList, setGroupList] = React.useState([]);
     const [messageList, setMessageList] = React.useState([]);
     const [loggedInUser, setLoggedInUser] = React.useState(null);
     const [selectedGroup, setSelectedGroup] = React.useState(0);
     const [client, setClient] = React.useState(null);
     const [msgValue, setMsgValue] = React.useState('');
+    const [dummyGroup, setDummyGroup] = React.useState('');
+    const [open, setOpen] = React.useState(false);
+    const [s3PathOject, setS3PathObject] = React.useState('');
+
+    const handleOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
 
 
     useEffect(() => {
@@ -57,62 +90,82 @@ const Chatapp = () => {
 
     useEffect(() => {
         console.log('hey')
-        setMessageList([{ 'id': 1, 'message': 'link1', 'from_user': 'test2', 'time': '11:23' }, { 'id': 2, 'message': 'link2', 'from_user': 'test', 'time': '11:23' }])
+        setMessageList([{ 'id': 1, 'message': 'link1', 'from_user': 'test2', 'time': '11:23', 'group': 1 }, { 'id': 2, 'message': 'link2', 'from_user': 'test', 'time': '11:23', 'group': 1 }, { 'id': 3, 'message': 'link3', 'from_user': 'test', 'time': '11:23', 'group': 2 }])
     }, [])
 
     var count = 3
-    useEffect(()=>{
-        console.log('erw',...messageList);
-        if(client)
-        {
+    useEffect(() => {
+        console.log('erw', ...messageList);
+        if (client) {
             client.onopen = () => {
-            console.log('WebSocket Client Connected');
-          };
-        client.onmessage = (message) => {
-        const dataFromServer = JSON.parse(message.data);
-        console.log('got reply! ', dataFromServer.type);
+                console.log('WebSocket Client Connected');
+            };
+            client.onmessage = (message) => {
+                const dataFromServer = JSON.parse(message.data);
+                console.log('got reply! ', dataFromServer.type);
 
-        if (dataFromServer) {
-            // this.setState((state) =>
-            // ({
-            //     messages: [...state.messages,
-            //     {
-            //     msg: dataFromServer.message,
-            //     name: dataFromServer.name,
-            //     }]
-            // })
-            // );
-            console.log(dataFromServer)
-            // setMessageList([...messageList, {'id':dataFromServer.id,'message':dataFromServer.message,'from_user':dataFromServer.username, 'time': '11:23'}])
-            
-            setMessageList(messageList => [...messageList, {'id':count+1,'message':dataFromServer.message,'from_user':dataFromServer.username, 'time': '11:23'}])
-            // setMessageList
-            console.log(messageList)
+                if (dataFromServer) {
+                    // this.setState((state) =>
+                    // ({
+                    //     messages: [...state.messages,
+                    //     {
+                    //     msg: dataFromServer.message,
+                    //     name: dataFromServer.name,
+                    //     }]
+                    // })
+                    // );
+                    console.log(dataFromServer)
+                    // setMessageList([...messageList, {'id':dataFromServer.id,'message':dataFromServer.message,'from_user':dataFromServer.username, 'time': '11:23'}])
+
+                    setMessageList(messageList => [...messageList, { 'id': count + 1, 'message': dataFromServer.message, 'from_user': dataFromServer.username, 'time': '11:23', group: dataFromServer.group }])
+                    // setMessageList
+                    console.log(messageList)
+                }
+            };
         }
-        };
-    }
-    },[client])
+    }, [client])
 
-    useEffect(()=>{
-        console.log('messageList',messageList)
-    },[messageList])
+    useEffect(() => {
+        console.log('messageList', messageList)
+    }, [messageList])
+
+    useEffect(() => {
+        if (loggedInUser)
+            setClient(new W3CWebSocket('ws://127.0.0.1:8000/ws/chat/' + loggedInUser + '/'));
+
+    }, [loggedInUser])
+
+    const getData = (val) => {
+        // do not forget to bind getData in constructor
+        console.log(val);
+        setS3PathObject(val);
+    }
+    
 
     const onButtonClicked = (e) => {
         console.log('wd')
         client.send(JSON.stringify({
-          type: "message",
-          message: msgValue,
-          username: loggedInUser
+            type: "message",
+            // message: msgValue, //s3object
+            message: s3PathOject,
+            username: loggedInUser, // userid
+            // group: dummyGroup  //groupid
+            group: selectedGroup
         }));
         setMsgValue('')
+        setS3PathObject('')
         e.preventDefault();
-      }
+    }
 
     const handleGroupListItemClick = (event, index) => {
         console.log(index)
         setSelectedGroup(index);
-        setClient(new W3CWebSocket('ws://127.0.0.1:8000/ws/chat/test/'));
-        
+        if (index === 1)
+            setDummyGroup('test')
+        else
+            setDummyGroup('test2')
+        // setClient(new W3CWebSocket('ws://127.0.0.1:8000/ws/chat/test/'));
+
     };
 
     return (
@@ -160,14 +213,14 @@ const Chatapp = () => {
                                 // console.log(message)
                                 return (
                                     <ListItem key={index}>
-                                        <Grid container>
+                                        {message['group'] === selectedGroup ? <Grid container>
                                             <Grid item xs={12}>
                                                 <ListItemText align={loggedInUser === message['from_user'] ? "right" : "Left"} primary={message['message']}></ListItemText>
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <ListItemText align={loggedInUser === message['from_user'] ? "right" : "left"} secondary={message['time']}></ListItemText>
                                             </Grid>
-                                        </Grid>
+                                        </Grid> : <></>}
                                     </ListItem>
                                 )
                             }
@@ -176,7 +229,7 @@ const Chatapp = () => {
                         <Divider />
                         <Grid container style={{ padding: '20px' }}>
                             <Grid item xs={11}>
-                                <TextField 
+                                {/* <TextField 
                                 id="outlined-basic-email" 
                                 label="Type Something" 
                                 fullWidth 
@@ -184,15 +237,42 @@ const Chatapp = () => {
                                 onChange={e => {
                                 setMsgValue(e.target.value)
                                 }}
-                                />
+                                /> */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick = {handleOpen}>
+                                    Record video
+                                </Button>
                             </Grid>
                             <Grid item xs={1} align="right">
-                                <Fab color="primary" aria-label="add" onClick={(event)=>{onButtonClicked(event)}}><SendIcon /></Fab>
+                                <Fab color="primary" aria-label="add" onClick={(event) => { onButtonClicked(event) }} disabled={s3PathOject?false:true}><SendIcon /></Fab>
                             </Grid>
                         </Grid>
                     </Grid>
                     : <></>}
             </Grid>
+
+            <Modal
+                aria-labelledby="transition-modal-title"
+                aria-describedby="transition-modal-description"
+                className={classes.modal}
+                open={open}
+                onClose={handleClose}
+                closeAfterTransition
+                BackdropComponent={Backdrop}
+                BackdropProps={{
+                    timeout: 500,
+                }}
+            >
+                <Fade in={open}>
+                    <div className={classes.paper}>
+                        {/* <h2 id="transition-modal-title">Transition modal</h2>
+                        <p id="transition-modal-description">react-transition-group animates me.</p> */}
+                        <RecordVideo sendData = {getData} />
+                    </div>
+                </Fade>
+            </Modal>
         </React.Fragment>
     );
 }
