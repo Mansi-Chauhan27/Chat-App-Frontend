@@ -57,6 +57,35 @@ const useStyles = makeStyles((theme) =>({
         overflowY:'scroll'
     },
 
+    gridAllign: {
+        paddingLeft:'12px',
+        paddingRight:'12px'
+    },
+
+    gridContainer: {
+        // width: 'fit-content',
+        backgroundColor: 'cadetblue',
+        border: '1px solid white',
+        borderRadius: '15px'
+        
+    },
+
+    groupSelected:{
+        background: 'linear-gradient(to right, #F1F2B5, cadetblue)'
+    },
+
+    chatBackground :{
+        // background:' linear-gradient(to right, #F1F2B5, #135058)',
+        backgroundColor:'#F1F2B5'
+        // borderRadius: '39px'
+    },
+
+    groupBackground :{
+        background:' linear-gradient(to right, #135058, #F1F2B5)',
+        // borderRadius: '39px'
+    }
+
+
 }));
 
 const Chatapp = () => {
@@ -170,8 +199,10 @@ const Chatapp = () => {
 
     return (
         <React.Fragment>
+            <div className="chats-page">
             <Grid container component={Paper} className={classes.chatSection}>
-                <Grid item xs={3} className={classes.borderRight500}>
+                {/* <Grid item xs={3} className={classes.borderRight500}> */}
+                <Grid item xs={3} className={classes.groupBackground}>
                     <List>
                         <ListItem button key="RemySharp">
                             <ListItemIcon>
@@ -194,6 +225,7 @@ const Chatapp = () => {
                                     key={group['id']}
                                     selected={selectedGroup === group['id']}
                                     onClick={(event) => { handleGroupListItemClick(event, group['id']); console.log('heyy') }}
+                                    classes={{selected:classes.groupSelected}}
                                 >
                                     <ListItemIcon>
                                         <Avatar alt={group['group_name']} src="https://material-ui.com/static/images/avatar/1.jpg" />
@@ -206,29 +238,34 @@ const Chatapp = () => {
 
                     </List>
                 </Grid>
+                <Divider />
                 {selectedGroup !== 0 ?
-                    <Grid item xs={9}>
-                        <List className={classes.messageArea}>
+                    <Grid item xs={9} style={{position:'relative'}} className={classes.chatBackground}>
+                        <Grid >
+                        <List className={classes.messageArea, classes.chatBackground}>
                             {isIterableArray(messageList) && messageList.map((message, index) => {
                                 // console.log(message)
                                 return (
                                     <ListItem key={index}>
-                                        {message['group'] === selectedGroup ? <Grid container>
-                                            <Grid item xs={12}>
-                                                <ListItemText align={loggedInUser === message['from_user'] ? "right" : "Left"} primary={message['message']}></ListItemText>
+                                        {message['group'] === selectedGroup ? 
+                                        <Grid container className={classes.gridContainer}>
+                                            <Grid item xs={12} className={classes.gridAllign} >
+                                                <ListItemText align={loggedInUser === message['from_user'] ? "right" : "Left"} primary={message['message'] } ></ListItemText>
                                             </Grid>
-                                            <Grid item xs={12}>
+                                            <Grid item xs={12} className={classes.gridAllign}>
                                                 <ListItemText align={loggedInUser === message['from_user'] ? "right" : "left"} secondary={message['time']}></ListItemText>
                                             </Grid>
-                                        </Grid> : <></>}
+                                        </Grid> :
+                                         <></>}
                                     </ListItem>
                                 )
                             }
                             )}
                         </List>
-                        <Divider />
-                        <Grid container style={{ padding: '20px' }}>
-                            <Grid item xs={11}>
+                        </Grid>
+                        {/* <Divider /> */}
+                        <Grid container style={{ padding: '20px', bottom:'0%', position:'absolute' }}>
+                            <Grid item xs={3}>
                                 {/* <TextField 
                                 id="outlined-basic-email" 
                                 label="Type Something" 
@@ -241,18 +278,19 @@ const Chatapp = () => {
                                 <Button
                                     variant="contained"
                                     color="primary"
+                                    style={{backgroundColor:'darkcyan'}}
                                     onClick = {handleOpen}>
                                     Record video
                                 </Button>
                             </Grid>
-                            <Grid item xs={1} align="right">
-                                <Fab color="primary" aria-label="add" onClick={(event) => { onButtonClicked(event) }} disabled={s3PathOject?false:true}><SendIcon /></Fab>
+                            <Grid item xs={9} align="right">
+                                <Fab color="primary" aria-label="add" style={{backgroundColor:'darkcyan'}}onClick={(event) => { onButtonClicked(event) }} disabled={s3PathOject?false:true}><SendIcon /></Fab>
                             </Grid>
                         </Grid>
                     </Grid>
                     : <></>}
             </Grid>
-
+            </div>
             <Modal
                 aria-labelledby="transition-modal-title"
                 aria-describedby="transition-modal-description"
